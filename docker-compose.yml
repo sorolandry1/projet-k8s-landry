@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recette}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recette}
+      POSTGRES_DB: ${POSTGRES_DB:-recette}
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    env_file: .env
+    environment:
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./backend:/app
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    env_file: .env
+    ports:
+      - "5174:5173"
+    # volumes:
+    #   - ./frontend:/app
+    #   - /app/node_modules
+    environment:
+      - VITE_API_URL=http://127.0.0.1:8001
+    # command: ["npm","run","dev","--","--host","0.0.0.0","--port","5173"]
+volumes:
+  db_data:

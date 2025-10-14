@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: recipe-config
+  namespace: recipe-app
+data:
+  POSTGRES_DB: recipedb
+  POSTGRES_USER: recipeuser
+  CORS_ORIGINS: "http://localhost:3000,http://recipe.local"
+
