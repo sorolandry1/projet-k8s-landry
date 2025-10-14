@@ -1,15 +1,20 @@
 import logging
+import time
+from datetime import datetime
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from datetime import datetime
-from pathlib import Path
-from .core.config import settings
-from .api.v1.router import api_router
-from .db.session import Base, engine, SessionLocal
-from .models.user import User
-from .core.security import get_password_hash
 from sqlalchemy.exc import SQLAlchemyError
+
+from .api.v1.router import api_router
+from .core.config import settings
+from .core.security import get_password_hash
+from .db.session import SessionLocal
+from .models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -39,12 +44,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create tables on startup (dev only)
 @app.on_event("startup")
 def on_startup():
-    Base.metadata.create_all(bind=engine)
+    run_database_migrations()
     seed_default_user()
 
+
+def run_database_migrations() -> None:
+    cfg_path = Path(__file__).resolve().parent.parent / "alembic.ini"
+    if not cfg_path.exists():
+        logger.warning("Alembic configuration not found at %s. Skipping migrations.", cfg_path)
+        return
+
+    alembic_cfg = Config(str(cfg_path))
+    alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+    script_location = Path(__file__).resolve().parent.parent / "alembic"
+    alembic_cfg.set_main_option("script_location", str(script_location))
+
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            command.upgrade(alembic_cfg, "head")
+        except Exception as exc:
+            if attempt == max_attempts:
+                logger.error("Failed to apply database migrations: %s", exc)
+                raise
+            wait_time = attempt * 2
+            logger.warning(
+                "Migration attempt %s/%s failed: %s. Retrying in %ss.",
+                attempt,
+                max_attempts,
+                exc,
+                wait_time,
+            )
+            time.sleep(wait_time)
+        else:
+            logger.info("Database migrations applied successfully.")
+            break
 
 def seed_default_user():
     if not settings.SEED_DEFAULT_USER:

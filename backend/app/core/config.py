@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = Field(default="postgresql+psycopg2://recette:recette@localhost:5436/recette")
+    DATABASE_URL: str = Field(default="postgresql+psycopg2://recette:recette@localhost:5432/recette")
     JWT_SECRET: str = Field(default="change-me-in-prod")
     JWT_ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60)

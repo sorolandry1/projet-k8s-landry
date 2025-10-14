@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MessageCircle, Send, Edit2, Trash2, MoreVertical } from 'lucide-react';
+import { resolveAssetUrl } from '../services/api';
 
 interface Comment {
   id: number;
@@ -190,7 +191,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 <div className="flex-shrink-0">
                   {comment.user.profile_picture ? (
                     <img
-                      src={comment.user.profile_picture}
+                      src={resolveAssetUrl(comment.user.profile_picture)}
                       alt={comment.user.username}
                       className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100"
                     />
@@ -287,4 +288,3 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     </div>
   );
 };
-

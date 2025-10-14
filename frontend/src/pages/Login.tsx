@@ -19,7 +19,14 @@ export default function Login(){
     
     try {
       const res = await api.post('/auth/login', { email, password })
-      login({ email, token: res.data.access_token })
+      const { access_token, user: userInfo } = res.data
+      login({
+        id: typeof userInfo?.id === 'number' ? userInfo.id : Number(userInfo?.id) || null,
+        email: userInfo?.email ?? email,
+        username: userInfo?.username ?? email,
+        token: access_token,
+        profile_picture: userInfo?.profile_picture ?? null
+      })
       navigate('/recipes')
     } catch (e: any) {
       setError(e?.response?.data?.detail || 'Erreur de connexion. Vérifiez vos identifiants.')

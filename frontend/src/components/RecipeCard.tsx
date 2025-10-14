@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Clock, Users, ChefHat, Heart, MessageCircle, Eye } from 'lucide-react';
+import { resolveAssetUrl } from '../services/api';
 
 interface Recipe {
   id: number;
@@ -39,7 +40,13 @@ const categoryColors = {
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onLike }) => {
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
-  const imageUrl = recipe.images?.[0] || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&h=600&fit=crop';
+  const primaryImage = recipe.images?.[0];
+  const imageUrl = primaryImage
+    ? resolveAssetUrl(primaryImage)
+    : 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800&h=600&fit=crop';
+  const ownerPicture = recipe.owner?.profile_picture
+    ? resolveAssetUrl(recipe.owner.profile_picture)
+    : undefined;
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden shadow-soft hover:shadow-warm transition-all duration-500 transform hover:-translate-y-2">
@@ -106,9 +113,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onLike }) => {
             {/* Author */}
             {recipe.owner && (
               <div className="flex items-center gap-2.5">
-                {recipe.owner.profile_picture ? (
+                {ownerPicture ? (
                   <img
-                    src={recipe.owner.profile_picture}
+                    src={ownerPicture}
                     alt={recipe.owner.username}
                     className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20"
                   />
@@ -146,4 +153,3 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, onLike }) => {
     </div>
   );
 };
-

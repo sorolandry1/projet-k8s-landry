@@ -10,8 +10,8 @@ class Ingredient(BaseModel):
 class RecipeBase(BaseModel):
     title: str = Field(min_length=5, max_length=200)
     description: str = Field(min_length=20, max_length=2000)
-    prep_time: int | None = Field(default=None, gt=0, le=1440)  # max 24h
-    cook_time: int | None = Field(default=None, gt=0, le=1440)
+    prep_time: int | None = Field(default=None, ge=0, le=1440)  # allow 0 for instant prep
+    cook_time: int | None = Field(default=None, ge=0, le=1440)
     servings: int | None = Field(default=None, gt=0, le=100)
     difficulty: str | None = Field(default=None, pattern="^(facile|moyen|difficile)$")
     category: str | None = None  # entrée, plat, dessert, boisson
@@ -25,8 +25,8 @@ class RecipeCreate(RecipeBase):
 class RecipeUpdate(BaseModel):
     title: str | None = Field(default=None, min_length=5, max_length=200)
     description: str | None = Field(default=None, min_length=20, max_length=2000)
-    prep_time: int | None = None
-    cook_time: int | None = None
+    prep_time: int | None = Field(default=None, ge=0, le=1440)
+    cook_time: int | None = Field(default=None, ge=0, le=1440)
     servings: int | None = None
     difficulty: str | None = Field(default=None, pattern="^(facile|moyen|difficile)$")
     category: str | None = None

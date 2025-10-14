@@ -1,150 +1,177 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import React, { useState } from 'react'
+import { X, ChevronLeft, ChevronRight, Download, ZoomIn } from 'lucide-react'
+import { resolveAssetUrl } from '../services/api'
 
 interface ImageGalleryProps {
-  images: string[];
-  title?: string;
+  images: string[]
+  title?: string
+  className?: string
 }
 
-export const ImageGallery: React.FC<ImageGalleryProps> = ({ images, title }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+export const ImageGallery: React.FC<ImageGalleryProps> = ({ 
+  images, 
+  title = "Galerie d'images",
+  className = ""
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
-  const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  };
+  if (!images || images.length === 0) {
+    return null
+  }
 
-  const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
+  const openLightbox = (index: number) => {
+    setSelectedIndex(index)
+    setIsFullscreen(true)
+    document.body.style.overflow = 'hidden'
+  }
 
-  if (!images || images.length === 0) return null;
+  const closeLightbox = () => {
+    setSelectedIndex(null)
+    setIsFullscreen(false)
+    document.body.style.overflow = 'unset'
+  }
+
+  const goToPrevious = () => {
+    if (selectedIndex !== null) {
+      setSelectedIndex(selectedIndex > 0 ? selectedIndex - 1 : images.length - 1)
+    }
+  }
+
+  const goToNext = () => {
+    if (selectedIndex !== null) {
+      setSelectedIndex(selectedIndex < images.length - 1 ? selectedIndex + 1 : 0)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') closeLightbox()
+    if (e.key === 'ArrowLeft') goToPrevious()
+    if (e.key === 'ArrowRight') goToNext()
+  }
+
+  const resolvedImages = images.map(image => resolveAssetUrl(image))
 
   return (
     <>
-      {/* Gallery Grid */}
-      <div className="space-y-4">
-        {/* Main Image */}
-        <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-gray-100 group cursor-pointer">
-          <img
-            src={images[currentIndex]}
-            alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-full object-cover"
-            onClick={() => setIsLightboxOpen(true)}
-          />
-          
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full">
-                <ZoomIn className="w-5 h-5 text-gray-700" />
-                <span className="text-sm font-medium text-gray-700">Agrandir</span>
+      <div className={`space-y-4 ${className}`}>
+        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <span className="text-2xl">📸</span>
+          {title}
+        </h3>
+        
+        {images.length === 1 ? (
+          <div className="relative group">
+            <img
+              src={resolvedImages[0]}
+              alt="Recette"
+              className="w-full h-64 md:h-80 object-cover rounded-2xl shadow-soft hover:shadow-warm transition-all duration-500 cursor-pointer"
+              onClick={() => openLightbox(0)}
+            />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-2xl flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
+                  <ZoomIn className="w-6 h-6 text-gray-700" />
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Navigation Arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  prevImage();
-                }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-700" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  nextImage();
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-110"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-700" />
-              </button>
-            </>
-          )}
-
-          {/* Counter */}
-          {images.length > 1 && (
-            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-              {currentIndex + 1} / {images.length}
-            </div>
-          )}
-        </div>
-
-        {/* Thumbnails */}
-        {images.length > 1 && (
-          <div className="grid grid-cols-6 gap-2">
-            {images.map((image, index) => (
-              <button
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {resolvedImages.map((image, index) => (
+              <div
                 key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`
-                  aspect-square rounded-lg overflow-hidden
-                  transition-all duration-200
-                  ${index === currentIndex 
-                    ? 'ring-4 ring-indigo-500 scale-105' 
-                    : 'ring-1 ring-gray-200 hover:ring-gray-300'
-                  }
-                `}
+                className="relative group aspect-square overflow-hidden rounded-xl cursor-pointer"
+                onClick={() => openLightbox(index)}
               >
                 <img
                   src={image}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  alt={`Image ${index + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-              </button>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
+                      <ZoomIn className="w-5 h-5 text-gray-700" />
+                    </div>
+                  </div>
+                </div>
+                {resolvedImages.length > 4 && index === 3 && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">
+                      +{resolvedImages.length - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
       </div>
 
       {/* Lightbox */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
-          {/* Close Button */}
-          <button
-            onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-4 right-4 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-colors z-10"
-          >
-            <X className="w-6 h-6 text-white" />
-          </button>
+      {isFullscreen && selectedIndex !== null && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onKeyDown={handleKeyDown}
+          tabIndex={0}
+        >
+          <div className="relative max-w-7xl max-h-full">
+            {/* Close button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+            >
+              <X className="w-6 h-6" />
+            </button>
 
-          {/* Image */}
-          <img
-            src={images[currentIndex]}
-            alt={`${title} - Image ${currentIndex + 1}`}
-            className="max-w-full max-h-full object-contain"
-          />
+            {/* Navigation buttons */}
+            {resolvedImages.length > 1 && (
+              <>
+                <button
+                  onClick={goToPrevious}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={goToNext}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            )}
 
-          {/* Navigation */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all hover:scale-110"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all hover:scale-110"
-              >
-                <ChevronRight className="w-6 h-6 text-white" />
-              </button>
-            </>
-          )}
+            {/* Main image */}
+            <img
+              src={resolvedImages[selectedIndex]}
+              alt={`Image ${selectedIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
 
-          {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium">
-            {currentIndex + 1} / {images.length}
+            {/* Image counter */}
+            {resolvedImages.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm font-medium">
+                {selectedIndex + 1} / {resolvedImages.length}
+              </div>
+            )}
+
+            {/* Download button */}
+            <button
+              onClick={() => {
+                const link = document.createElement('a')
+                link.href = resolvedImages[selectedIndex]
+                link.download = `recette-image-${selectedIndex + 1}.jpg`
+                link.click()
+              }}
+              className="absolute bottom-4 right-4 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all"
+            >
+              <Download className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}
     </>
-  );
-};
-
+  )
+}

@@ -121,6 +121,11 @@ docker compose up -d
 - Email: `jean@example.com` | Password: `Password123!`
 - Email: `sophie@example.com` | Password: `Password123!`
 
+### Migrations Alembic
+- Les migrations sont appliquées automatiquement quand le backend démarre.
+- Pour lancer la mise à jour manuellement : `make alembic-upgrade` ou `docker compose exec backend alembic upgrade head`.
+- Pour générer une nouvelle migration après avoir modifié les modèles : `make alembic-revision message="ajout table"`.
+
 ---
 
 ### Prérequis
@@ -547,5 +552,4 @@ Pour toute question ou problème :
 - 📚 Documentation API : http://recipe.local/api/docs
 
 ---
-
 

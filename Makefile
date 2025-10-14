@@ -62,25 +62,39 @@ docker-clean: ## Nettoie les conteneurs, images et volumes
 	docker rmi recipe-backend:latest recipe-frontend:latest 2>/dev/null || true
 	@echo "$(GREEN)✓ Nettoyage terminé$(NC)"
 
+alembic-upgrade: ## Applique les migrations Alembic (head)
+	@echo "$(BLUE)Application des migrations...$(NC)"
+	docker compose exec backend alembic upgrade head
+	@echo "$(GREEN)✓ Base de données à jour$(NC)"
+
+alembic-revision: ## Génère une migration Alembic (message="votre message")
+	@if [ -z "$(message)" ]; then \
+		echo "$(RED)Erreur: indiquez un message avec message=\"Description\"$(NC)"; \
+		exit 1; \
+	fi
+	@echo "$(BLUE)Génération d'une nouvelle migration...$(NC)"
+	docker compose exec backend alembic revision --autogenerate -m "$(message)"
+	@echo "$(GREEN)✓ Migration créée$(NC)"
+
 # ==============================================================================
 # KIND CLUSTER
 # ==============================================================================
 
 kind-create: ## Crée un cluster Kind
 	@echo "$(BLUE)Création du cluster Kind...$(NC)"
-	kind create cluster --config kind-config.yaml
+	./kind create cluster --config kind-config.yaml
 	kubectl cluster-info --context kind-recipe-cluster
 	@echo "$(GREEN)✓ Cluster créé avec succès$(NC)"
 
 kind-delete: ## Supprime le cluster Kind
 	@echo "$(RED)Suppression du cluster Kind...$(NC)"
-	kind delete cluster --name recipe-cluster
+	./kind delete cluster --name recipe-cluster
 	@echo "$(GREEN)✓ Cluster supprimé$(NC)"
 
 kind-load: build ## Charge les images dans Kind
 	@echo "$(BLUE)Chargement des images dans Kind...$(NC)"
-	kind load docker-image recipe-backend:latest --name recipe-cluster
-	kind load docker-image recipe-frontend:latest --name recipe-cluster
+	./kind load docker-image recipe-backend:latest --name recipe-cluster
+	./kind load docker-image recipe-frontend:latest --name recipe-cluster
 	@echo "$(GREEN)✓ Images chargées$(NC)"
 
 # ==============================================================================

@@ -30,7 +30,25 @@ const resolveBaseURL = () => {
   }
 }
 
-const baseURL = resolveBaseURL()
+export const baseURL = resolveBaseURL()
+
+const joinUrl = (root: string, path: string) => {
+  const normalizedRoot = root.replace(/\/+$/, '')
+  const normalizedPath = path.replace(/^\/+/, '')
+  return `${normalizedRoot}/${normalizedPath}`
+}
+
+export const resolveAssetUrl = (value?: string | null): string => {
+  if (!value) return ''
+  if (/^(?:https?:|data:|blob:)/i.test(value)) return value
+
+  const trimmed = value.replace(/^\/+/, '')
+  const normalized = trimmed.startsWith('uploads/')
+    ? trimmed
+    : `uploads/${trimmed}`
+
+  return joinUrl(baseURL, normalized)
+}
 
 export const api = axios.create({
   baseURL: `${baseURL}/api/v1`

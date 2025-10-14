@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, Users, ChefHat, Edit, Trash2, ArrowLeft } from 'lucide-react';
-import { apiAuth } from '../services/api';
+import { apiAuth, resolveAssetUrl } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 import { LikeButton } from '../components/LikeButton';
 import { CommentSection } from '../components/CommentSection';
@@ -32,7 +32,7 @@ type Recipe = {
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [recipe, setRecipe] = React.useState<Recipe | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -48,8 +48,31 @@ export default function RecipeDetail() {
 
   const remove = async () => {
     if (!window.confirm('Supprimer cette recette ?')) return;
-    await apiAuth(user?.token).delete(`/recipes/${id}`);
-    navigate('/recipes');
+    if (!user?.token) {
+      alert('Vous devez être connecté pour supprimer une recette.')
+      logout()
+      navigate('/login')
+      return
+    }
+
+    try {
+      await apiAuth(user.token).delete(`/recipes/${id}`)
+      navigate('/recipes')
+    } catch (error: any) {
+      const status = error?.response?.status
+      if (status === 401) {
+        alert('Votre session a expiré. Veuillez vous reconnecter.')
+        logout()
+        navigate('/login')
+        return
+      }
+      if (status === 403) {
+        alert('Vous ne pouvez pas supprimer une recette qui ne vous appartient pas.')
+        return
+      }
+      console.error('Erreur lors de la suppression:', error)
+      alert('Une erreur est survenue lors de la suppression de la recette.')
+    }
   };
 
   if (loading) {
@@ -62,7 +85,10 @@ export default function RecipeDetail() {
 
   if (!recipe) return <div className="text-center py-12">Recette non trouvée</div>;
 
-  const canEdit = user && recipe.owner_id === (user as any).id;
+  const canEdit = Boolean(user && user.id !== null && recipe.owner_id === user.id);
+  const ownerPicture = recipe.owner?.profile_picture
+    ? resolveAssetUrl(recipe.owner.profile_picture)
+    : undefined;
   const totalTime = (recipe.prep_time || 0) + (recipe.cook_time || 0);
 
   return (
@@ -117,9 +143,17 @@ export default function RecipeDetail() {
               {/* Author */}
               {recipe.owner && (
                 <div className="flex items-center gap-3 mt-6 pt-6 border-t border-gray-200">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <ChefHat className="w-6 h-6 text-white" />
-                  </div>
+                  {ownerPicture ? (
+                    <img
+                      src={ownerPicture}
+                      alt={recipe.owner.username}
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-indigo-100"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                      <ChefHat className="w-6 h-6 text-white" />
+                    </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-500">Créé par</p>
                     <p className="font-semibold text-gray-900">{recipe.owner.username}</p>

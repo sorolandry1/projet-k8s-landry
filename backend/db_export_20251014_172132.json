@@ -1,0 +1,279 @@
+{
+  "export_date": "2025-10-14T17:21:32.768303",
+  "users": [
+    {
+      "id": 1,
+      "username": "chef_marie",
+      "email": "marie@example.com",
+      "bio": "Passionnée de pâtisserie française",
+      "profile_picture": null,
+      "created_at": "2025-10-14T17:20:20.619654+00:00",
+      "updated_at": "2025-10-14T17:20:20.619663+00:00"
+    },
+    {
+      "id": 2,
+      "username": "cook_jean",
+      "email": "jean@example.com",
+      "bio": "Amateur de cuisine méditerranéenne",
+      "profile_picture": null,
+      "created_at": "2025-10-14T17:20:21.045566+00:00",
+      "updated_at": "2025-10-14T17:20:21.045576+00:00"
+    },
+    {
+      "id": 3,
+      "username": "baker_sophie",
+      "email": "sophie@example.com",
+      "bio": "Experte en boulangerie artisanale",
+      "profile_picture": null,
+      "created_at": "2025-10-14T17:20:21.442396+00:00",
+      "updated_at": "2025-10-14T17:20:21.442401+00:00"
+    }
+  ],
+  "recipes": [
+    {
+      "id": 1,
+      "title": "Tarte aux Pommes Classique",
+      "description": "Une délicieuse tarte aux pommes traditionnelle française avec une pâte brisée croustillante et des pommes fondantes.",
+      "prep_time": 30,
+      "cook_time": 45,
+      "servings": 8,
+      "difficulty": "moyen",
+      "category": "dessert",
+      "ingredients": [
+        {
+          "name": "Pâte brisée",
+          "quantity": "1",
+          "unit": "pièce"
+        },
+        {
+          "name": "Pommes",
+          "quantity": "6",
+          "unit": "pièces"
+        },
+        {
+          "name": "Sucre",
+          "quantity": "100",
+          "unit": "g"
+        },
+        {
+          "name": "Beurre",
+          "quantity": "50",
+          "unit": "g"
+        },
+        {
+          "name": "Cannelle",
+          "quantity": "1",
+          "unit": "c.à.c"
+        }
+      ],
+      "steps": [
+        "Préchauffer le four à 180°C",
+        "Éplucher et couper les pommes en lamelles",
+        "Étaler la pâte dans un moule",
+        "Disposer les pommes sur la pâte",
+        "Saupoudrer de sucre et cannelle",
+        "Ajouter des noisettes de beurre",
+        "Cuire 45 minutes jusqu'à ce que la tarte soit dorée"
+      ],
+      "images": null,
+      "tags": [
+        "français",
+        "dessert",
+        "automne",
+        "facile"
+      ],
+      "owner_id": 1,
+      "created_at": "2025-10-14T17:20:33.528051+00:00",
+      "updated_at": "2025-10-14T17:20:33.528059+00:00"
+    },
+    {
+      "id": 2,
+      "title": "Salade Méditerranéenne",
+      "description": "Fraîche et colorée, parfaite pour l'été. Une explosion de saveurs méditerranéennes.",
+      "prep_time": 15,
+      "cook_time": 0,
+      "servings": 4,
+      "difficulty": "facile",
+      "category": "entrée",
+      "ingredients": [
+        {
+          "name": "Tomates",
+          "quantity": "4",
+          "unit": "pièces"
+        },
+        {
+          "name": "Concombre",
+          "quantity": "1",
+          "unit": "pièce"
+        },
+        {
+          "name": "Feta",
+          "quantity": "200",
+          "unit": "g"
+        },
+        {
+          "name": "Olives noires",
+          "quantity": "100",
+          "unit": "g"
+        },
+        {
+          "name": "Huile d'olive",
+          "quantity": "3",
+          "unit": "c.à.s"
+        },
+        {
+          "name": "Citron",
+          "quantity": "1",
+          "unit": "pièce"
+        },
+        {
+          "name": "Oignon rouge",
+          "quantity": "1",
+          "unit": "pièce"
+        }
+      ],
+      "steps": [
+        "Couper les tomates et concombre en dés",
+        "Émincer l'oignon rouge",
+        "Émietter la feta",
+        "Mélanger tous les ingrédients dans un saladier",
+        "Arroser d'huile d'olive et jus de citron",
+        "Assaisonner avec sel et poivre",
+        "Servir frais"
+      ],
+      "images": null,
+      "tags": [
+        "été",
+        "végétarien",
+        "rapide",
+        "méditerranéen"
+      ],
+      "owner_id": 2,
+      "created_at": "2025-10-14T17:20:33.546088+00:00",
+      "updated_at": "2025-10-14T17:20:33.546094+00:00"
+    },
+    {
+      "id": 3,
+      "title": "Poulet Rôti aux Herbes",
+      "description": "Un poulet rôti parfait avec une peau croustillante et une chair juteuse, parfumé aux herbes de Provence.",
+      "prep_time": 20,
+      "cook_time": 90,
+      "servings": 6,
+      "difficulty": "moyen",
+      "category": "plat",
+      "ingredients": [
+        {
+          "name": "Poulet entier",
+          "quantity": "1.5",
+          "unit": "kg"
+        },
+        {
+          "name": "Beurre",
+          "quantity": "80",
+          "unit": "g"
+        },
+        {
+          "name": "Thym",
+          "quantity": "2",
+          "unit": "branches"
+        },
+        {
+          "name": "Romarin",
+          "quantity": "2",
+          "unit": "branches"
+        },
+        {
+          "name": "Citron",
+          "quantity": "1",
+          "unit": "pièce"
+        },
+        {
+          "name": "Ail",
+          "quantity": "4",
+          "unit": "gousses"
+        }
+      ],
+      "steps": [
+        "Préchauffer le four à 200°C",
+        "Mélanger le beurre avec les herbes hachées",
+        "Glisser le beurre aux herbes sous la peau du poulet",
+        "Insérer le citron et l'ail dans la cavité",
+        "Badigeonner le poulet d'huile d'olive",
+        "Rôtir 1h30 en arrosant régulièrement",
+        "Laisser reposer 10 minutes avant de découper"
+      ],
+      "images": null,
+      "tags": [
+        "français",
+        "plat principal",
+        "festif",
+        "dimanche"
+      ],
+      "owner_id": 3,
+      "created_at": "2025-10-14T17:20:33.549942+00:00",
+      "updated_at": "2025-10-14T17:20:33.549947+00:00"
+    },
+    {
+      "id": 4,
+      "title": "Smoothie Bowl Énergisant",
+      "description": "Un petit-déjeuner sain et coloré, plein de vitamines pour bien commencer la journée.",
+      "prep_time": 10,
+      "cook_time": 0,
+      "servings": 2,
+      "difficulty": "facile",
+      "category": "dessert",
+      "ingredients": [
+        {
+          "name": "Bananes congelées",
+          "quantity": "2",
+          "unit": "pièces"
+        },
+        {
+          "name": "Myrtilles",
+          "quantity": "150",
+          "unit": "g"
+        },
+        {
+          "name": "Lait d'amande",
+          "quantity": "200",
+          "unit": "ml"
+        },
+        {
+          "name": "Granola",
+          "quantity": "50",
+          "unit": "g"
+        },
+        {
+          "name": "Graines de chia",
+          "quantity": "2",
+          "unit": "c.à.s"
+        },
+        {
+          "name": "Miel",
+          "quantity": "1",
+          "unit": "c.à.s"
+        }
+      ],
+      "steps": [
+        "Mixer les bananes congelées avec le lait d'amande",
+        "Ajouter les myrtilles et mixer à nouveau",
+        "Verser dans des bols",
+        "Garnir de granola et graines de chia",
+        "Arroser de miel",
+        "Servir immédiatement"
+      ],
+      "images": null,
+      "tags": [
+        "petit-déjeuner",
+        "healthy",
+        "végétarien",
+        "rapide"
+      ],
+      "owner_id": 1,
+      "created_at": "2025-10-14T17:20:33.553495+00:00",
+      "updated_at": "2025-10-14T17:20:33.553503+00:00"
+    }
+  ],
+  "comments": [],
+  "likes": []
+}
