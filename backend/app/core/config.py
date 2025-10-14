@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = Field(default="change-me-in-prod")
     JWT_ALGORITHM: str = Field(default="HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60)
-    CORS_ORIGINS: str = Field(default="http://localhost:5173,http://localhost:5174")
+    CORS_ORIGINS: str = Field(default="http://localhost:5173,http://localhost:5176")
     SEED_DEFAULT_USER: bool = Field(default=True)
     DEFAULT_USER_EMAIL: str | None = Field(default=None)
     DEFAULT_USER_PASSWORD: str | None = Field(default=None)
