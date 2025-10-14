@@ -62,19 +62,7 @@ docker-clean: ## Nettoie les conteneurs, images et volumes
 	docker rmi recipe-backend:latest recipe-frontend:latest 2>/dev/null || true
 	@echo "$(GREEN)✓ Nettoyage terminé$(NC)"
 
-alembic-upgrade: ## Applique les migrations Alembic (head)
-	@echo "$(BLUE)Application des migrations...$(NC)"
-	docker compose exec backend alembic upgrade head
-	@echo "$(GREEN)✓ Base de données à jour$(NC)"
 
-alembic-revision: ## Génère une migration Alembic (message="votre message")
-	@if [ -z "$(message)" ]; then \
-		echo "$(RED)Erreur: indiquez un message avec message=\"Description\"$(NC)"; \
-		exit 1; \
-	fi
-	@echo "$(BLUE)Génération d'une nouvelle migration...$(NC)"
-	docker compose exec backend alembic revision --autogenerate -m "$(message)"
-	@echo "$(GREEN)✓ Migration créée$(NC)"
 
 # ==============================================================================
 # KIND CLUSTER
