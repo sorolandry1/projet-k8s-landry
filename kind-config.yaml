@@ -3,6 +3,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 name: recipe-cluster
 nodes:
   - role: control-plane
+    image: kindest/node:v1.32.0
     kubeadmConfigPatches:
       - |
         kind: InitConfiguration
@@ -17,4 +18,6 @@ nodes:
         hostPort: 8446
         protocol: TCP
   - role: worker
+    image: kindest/node:v1.32.0
   - role: worker
+    image: kindest/node:v1.32.0
