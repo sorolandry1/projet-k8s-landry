@@ -83,13 +83,52 @@ alembic-revision: ## Génère une migration Alembic (message="votre message")
 # KIND CLUSTER
 # ==============================================================================
 
-kind-create: ## Crée un cluster Kind
+KIND_MIN_INOTIFY_INSTANCES ?= 1024
+KIND_MIN_INOTIFY_WATCHES ?= 262144
+KIND_MIN_FILE_MAX ?= 1048576
+KIND_MIN_VM_MAX_MAP ?= 262144
+
+kind-preflight:
+	@instances=$$(sysctl -n fs.inotify.max_user_instances 2>/dev/null || echo 0); \
+		if [ "$$instances" -lt $(KIND_MIN_INOTIFY_INSTANCES) ]; then \
+			echo "$(RED)✗ fs.inotify.max_user_instances trop bas (actuel: $$instances, requis: $(KIND_MIN_INOTIFY_INSTANCES)).$(NC)"; \
+			echo "$(RED)  => Exécutez: sudo sysctl fs.inotify.max_user_instances=$(KIND_MIN_INOTIFY_INSTANCES)$(NC)"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ fs.inotify.max_user_instances=$(NC) $$instances"; \
+		fi; \
+	watches=$$(sysctl -n fs.inotify.max_user_watches 2>/dev/null || echo 0); \
+		if [ "$$watches" -lt $(KIND_MIN_INOTIFY_WATCHES) ]; then \
+			echo "$(RED)✗ fs.inotify.max_user_watches trop bas (actuel: $$watches, requis: $(KIND_MIN_INOTIFY_WATCHES)).$(NC)"; \
+			echo "$(RED)  => Exécutez: sudo sysctl fs.inotify.max_user_watches=$(KIND_MIN_INOTIFY_WATCHES)$(NC)"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ fs.inotify.max_user_watches=$(NC) $$watches"; \
+		fi; \
+	filemax=$$(sysctl -n fs.file-max 2>/dev/null || echo 0); \
+		if [ "$$filemax" -lt $(KIND_MIN_FILE_MAX) ]; then \
+			echo "$(RED)✗ fs.file-max trop bas (actuel: $$filemax, requis: $(KIND_MIN_FILE_MAX)).$(NC)"; \
+			echo "$(RED)  => Exécutez: sudo sysctl fs.file-max=$(KIND_MIN_FILE_MAX)$(NC)"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ fs.file-max=$(NC) $$filemax"; \
+		fi; \
+	vmmax=$$(sysctl -n vm.max_map_count 2>/dev/null || echo 0); \
+		if [ "$$vmmax" -lt $(KIND_MIN_VM_MAX_MAP) ]; then \
+			echo "$(RED)✗ vm.max_map_count trop bas (actuel: $$vmmax, requis: $(KIND_MIN_VM_MAX_MAP)).$(NC)"; \
+			echo "$(RED)  => Exécutez: sudo sysctl vm.max_map_count=$(KIND_MIN_VM_MAX_MAP)$(NC)"; \
+			exit 1; \
+		else \
+			echo "$(GREEN)✓ vm.max_map_count=$(NC) $$vmmax"; \
+		fi
+
+kind-create: kind-preflight ## Crée un cluster Kind
 	@echo "$(BLUE)Création du cluster Kind...$(NC)"
 	@echo "$(BLUE)Nettoyage préalable...$(NC)"
 	@$(KIND) delete cluster --name recipe-cluster 2>/dev/null || true
 	@docker system prune -f
 	@echo "$(BLUE)Création du nouveau cluster...$(NC)"
-	@$(KIND) create cluster --config kind-config.yaml --wait 5m
+	@$(KIND) create cluster --config kind-config.yaml --wait 20m
 	@kubectl cluster-info --context kind-recipe-cluster
 	@echo "$(GREEN)✓ Cluster créé avec succès$(NC)"
 
