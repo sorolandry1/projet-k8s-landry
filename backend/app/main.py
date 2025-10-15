@@ -8,6 +8,7 @@ from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import SQLAlchemyError
 
 from .api.v1.router import api_router
@@ -56,6 +57,14 @@ def run_database_migrations() -> None:
         logger.warning("Alembic configuration not found at %s. Skipping migrations.", cfg_path)
         return
 
+    existing_tables = _get_existing_table_names()
+    if existing_tables:
+        logger.info(
+            "Existing database tables detected (%s). Skipping Alembic migrations.",
+            ", ".join(sorted(existing_tables)),
+        )
+        return
+
     alembic_cfg = Config(str(cfg_path))
     alembic_cfg.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
     script_location = Path(__file__).resolve().parent.parent / "alembic"
@@ -81,6 +90,19 @@ def run_database_migrations() -> None:
         else:
             logger.info("Database migrations applied successfully.")
             break
+
+
+def _get_existing_table_names() -> list[str]:
+    engine = create_engine(settings.DATABASE_URL)
+    try:
+        with engine.connect() as connection:
+            inspector = inspect(connection)
+            return inspector.get_table_names()
+    except SQLAlchemyError as exc:
+        logger.debug("Unable to inspect existing tables before migration: %s", exc)
+        return []
+    finally:
+        engine.dispose()
 
 def seed_default_user():
     if not settings.SEED_DEFAULT_USER:
