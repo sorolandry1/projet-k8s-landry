@@ -198,7 +198,7 @@ export default function Recipes() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fadeIn">
             {sortedItems.map((recipe, index) => (
               <div 
-                key={recipe.id}
+                key={`${recipe.id}-${index}`}
                 className="animate-slideUp"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >

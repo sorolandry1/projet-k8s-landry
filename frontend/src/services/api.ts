@@ -1,33 +1,52 @@
 import axios from 'axios'
 
 const resolveBaseURL = () => {
-  const raw = import.meta.env.VITE_API_URL?.trim()
+  const rawValues =
+    import.meta.env.VITE_API_URL
+      ?.split(',')
+      .map(value => value.trim())
+      .filter(Boolean) ?? []
+  const raw = rawValues[0]
   const windowAvailable = typeof window !== 'undefined'
   const inferFromWindow = () => {
     if (!windowAvailable) return 'http://localhost:8000'
     const { protocol, hostname } = window.location
-    const port = hostname === 'localhost' || hostname === '127.0.0.1' ? '8000' : window.location.port
-    return `${protocol}//${hostname}${port ? `:${port}` : ''}`
+    const port =
+      hostname === 'localhost' || hostname === '127.0.0.1'
+        ? '8000'
+        : window.location.port
+    const devServerPorts = new Set(['5173', '5174', '5175', '5176', '5177', '5178', '5179'])
+    const resolvedPort = port && devServerPorts.has(port) ? '8000' : port
+    return `${protocol}//${hostname}${resolvedPort ? `:${resolvedPort}` : ''}`
   }
 
-  if (!raw) {
-    return inferFromWindow()
-  }
-
-  try {
-    const parsed = new URL(raw)
-    // Handle Docker-only hostnames such as "backend"
-    if (
-      windowAvailable &&
-      parsed.hostname === 'backend' &&
-      window.location.hostname !== 'backend'
-    ) {
-      return `${parsed.protocol}//${window.location.hostname}:${parsed.port || '8000'}`
+  if (raw) {
+    for (const candidate of rawValues) {
+      try {
+        const parsed = new URL(candidate)
+        const isLocalHost = ['localhost', '127.0.0.1'].includes(parsed.hostname)
+        if (
+          windowAvailable &&
+          isLocalHost &&
+          !['localhost', '127.0.0.1'].includes(window.location.hostname)
+        ) {
+          continue
+        }
+        if (
+          windowAvailable &&
+          parsed.hostname === 'backend' &&
+          window.location.hostname !== 'backend'
+        ) {
+          return `${parsed.protocol}//${window.location.hostname}:${parsed.port || '8000'}`
+        }
+        return parsed.toString().replace(/\/$/, '')
+      } catch {
+        continue
+      }
     }
-    return parsed.toString().replace(/\/$/, '')
-  } catch {
-    return inferFromWindow()
   }
+
+  return inferFromWindow()
 }
 
 export const baseURL = resolveBaseURL()
