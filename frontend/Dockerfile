@@ -14,5 +14,8 @@ COPY vite.config.ts tsconfig.json postcss.config.js tailwind.config.js index.htm
 # Copier les dossiers source
 COPY src ./src
 
-EXPOSE 5173
-CMD ["npm","run","dev","--","--host","0.0.0.0","--port","5173"]
+# Construire l'application pour la production
+RUN npm run build
+
+EXPOSE 80
+CMD ["npm","run","preview","--","--host","0.0.0.0","--port","80"]

@@ -32,6 +32,8 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 80
+          command: ["npm"]
+          args: ["run", "preview", "--", "--host", "0.0.0.0", "--port", "80"]
           resources:
             requests:
               memory: "128Mi"
@@ -43,12 +45,12 @@ spec:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 10
-            periodSeconds: 10
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /
               port: 80
-            initialDelaySeconds: 5
-            periodSeconds: 5
-
+            initialDelaySeconds: 15
+            periodSeconds: 10
