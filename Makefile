@@ -6,6 +6,9 @@ GREEN := \033[0;32m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
+# Détection automatique du binaire kind
+KIND := $(shell which kind || echo "./kind")
+
 help: ## Affiche l'aide
 	@echo "$(BLUE)Commandes disponibles:$(NC)"
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
@@ -82,19 +85,23 @@ alembic-revision: ## Génère une migration Alembic (message="votre message")
 
 kind-create: ## Crée un cluster Kind
 	@echo "$(BLUE)Création du cluster Kind...$(NC)"
-	./kind create cluster --config kind-config.yaml
-	kubectl cluster-info --context kind-recipe-cluster
+	@echo "$(BLUE)Nettoyage préalable...$(NC)"
+	@$(KIND) delete cluster --name recipe-cluster 2>/dev/null || true
+	@docker system prune -f
+	@echo "$(BLUE)Création du nouveau cluster...$(NC)"
+	@$(KIND) create cluster --config kind-config.yaml --wait 5m
+	@kubectl cluster-info --context kind-recipe-cluster
 	@echo "$(GREEN)✓ Cluster créé avec succès$(NC)"
 
 kind-delete: ## Supprime le cluster Kind
 	@echo "$(RED)Suppression du cluster Kind...$(NC)"
-	./kind delete cluster --name recipe-cluster
+	@$(KIND) delete cluster --name recipe-cluster
 	@echo "$(GREEN)✓ Cluster supprimé$(NC)"
 
 kind-load: build ## Charge les images dans Kind
 	@echo "$(BLUE)Chargement des images dans Kind...$(NC)"
-	./kind load docker-image recipe-backend:latest --name recipe-cluster
-	./kind load docker-image recipe-frontend:latest --name recipe-cluster
+	@$(KIND) load docker-image recipe-backend:latest --name recipe-cluster
+	@$(KIND) load docker-image recipe-frontend:latest --name recipe-cluster
 	@echo "$(GREEN)✓ Images chargées$(NC)"
 
 # ==============================================================================
@@ -104,11 +111,11 @@ kind-load: build ## Charge les images dans Kind
 ingress-install: ## Installe NGINX Ingress Controller
 	@echo "$(BLUE)Installation de NGINX Ingress...$(NC)"
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
-	@echo "Attente de la disponibilité de l'ingress..."
+	@echo "Attente de la disponibilité de l'ingress (cela peut prendre 2-3 minutes)..."
 	kubectl wait --namespace ingress-nginx \
 		--for=condition=ready pod \
 		--selector=app.kubernetes.io/component=controller \
-		--timeout=90s
+		--timeout=300s
 	@echo "$(GREEN)✓ Ingress installé$(NC)"
 
 # ==============================================================================
@@ -121,15 +128,25 @@ k8s-deploy: ## Déploie sur Kubernetes
 	kubectl apply -f k8s/configmap.yaml
 	kubectl apply -f k8s/secret.yaml
 	kubectl apply -f k8s/storage-pvc.yaml
+	@echo "Attente de la création du PVC..."
+	@sleep 5
 	kubectl apply -f k8s/postgres-statefulset.yaml
-	@echo "Attente de la disponibilité de PostgreSQL..."
-	kubectl wait --for=condition=ready pod -l app=postgres -n recipe-app --timeout=120s
+	@echo "Attente de la création du pod PostgreSQL (peut prendre 1-2 minutes)..."
+	@for i in 1 2 3 4 5 6 7 8 9 10 11 12; do \
+		if kubectl get pod -l app=postgres -n recipe-app 2>/dev/null | grep -q postgres; then \
+			echo "$(GREEN)✓ Pod PostgreSQL créé, attente qu'il soit prêt...$(NC)"; \
+			break; \
+		fi; \
+		echo "Attente de la création du pod ($i/12)..."; \
+		sleep 10; \
+	done
+	kubectl wait --for=condition=ready pod -l app=postgres -n recipe-app --timeout=180s
 	kubectl apply -f k8s/backend-deployment.yaml
 	@echo "Attente de la disponibilité du backend..."
-	kubectl wait --for=condition=ready pod -l app=backend -n recipe-app --timeout=120s
+	kubectl wait --for=condition=ready pod -l app=backend -n recipe-app --timeout=180s
 	kubectl apply -f k8s/frontend-deployment.yaml
 	@echo "Attente de la disponibilité du frontend..."
-	kubectl wait --for=condition=ready pod -l app=frontend -n recipe-app --timeout=120s
+	kubectl wait --for=condition=ready pod -l app=frontend -n recipe-app --timeout=180s
 	kubectl apply -f k8s/ingress.yaml
 	@echo "$(GREEN)✓ Déploiement terminé$(NC)"
 	@echo "$(BLUE)Ajoutez '127.0.0.1 recipe.local' à /etc/hosts$(NC)"
@@ -281,8 +298,27 @@ debug-ingress: ## Debug info ingress
 version: ## Affiche les versions
 	@echo "$(BLUE)=== Versions ===$(NC)"
 	@echo "Docker: $$(docker --version 2>/dev/null || echo 'non installé')"
-	@echo "Kind: $$(kind --version 2>/dev/null || echo 'non installé')"
+	@echo "Kind: $$($(KIND) --version 2>/dev/null || echo 'non installé')"
 	@echo "Kubectl: $$(kubectl version --client --short 2>/dev/null || echo 'non installé')"
 	@echo "Python: $$(python3 --version 2>/dev/null || echo 'non installé')"
 	@echo "Node: $$(node --version 2>/dev/null || echo 'non installé')"
 	@echo "npm: $$(npm --version 2>/dev/null || echo 'non installé')"
+
+# ==============================================================================
+# VERIFICATION
+# ==============================================================================
+
+check-docker: ## Vérifie que Docker fonctionne
+	@echo "$(BLUE)Vérification de Docker...$(NC)"
+	@docker info > /dev/null 2>&1 && echo "$(GREEN)✓ Docker OK$(NC)" || (echo "$(RED)✗ Docker ne fonctionne pas$(NC)" && exit 1)
+
+check-kind: ## Vérifie que Kind est installé
+	@echo "$(BLUE)Vérification de Kind...$(NC)"
+	@$(KIND) version > /dev/null 2>&1 && echo "$(GREEN)✓ Kind OK$(NC)" || (echo "$(RED)✗ Kind non installé$(NC)" && exit 1)
+
+check-kubectl: ## Vérifie que kubectl est installé
+	@echo "$(BLUE)Vérification de kubectl...$(NC)"
+	@kubectl version --client > /dev/null 2>&1 && echo "$(GREEN)✓ kubectl OK$(NC)" || (echo "$(RED)✗ kubectl non installé$(NC)" && exit 1)
+
+check-all: check-docker check-kind check-kubectl ## Vérifie tous les prérequis
+	@echo "$(GREEN)✓ Tous les prérequis sont installés$(NC)"
