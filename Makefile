@@ -62,8 +62,6 @@ docker-clean: ## Nettoie les conteneurs, images et volumes
 	docker rmi recipe-backend:latest recipe-frontend:latest 2>/dev/null || true
 	@echo "$(GREEN)✓ Nettoyage terminé$(NC)"
 
-
-
 # ==============================================================================
 # KIND CLUSTER
 # ==============================================================================
