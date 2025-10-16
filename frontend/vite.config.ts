@@ -6,5 +6,10 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true
+  },
+  preview: {
+    host: true,
+    port: 80,
+    allowedHosts: ['recipe.local']
   }
 })

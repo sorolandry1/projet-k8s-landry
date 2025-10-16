@@ -1,12 +1,11 @@
 import { Routes, Route, Link, Navigate } from 'react-router-dom'
-import { ChefHat, Home as HomeIcon, BookOpen, PlusCircle, User, LogOut, LogIn, UserPlus, Settings } from 'lucide-react'
+import { ChefHat, Home as HomeIcon, BookOpen, PlusCircle, User, LogOut, LogIn, UserPlus } from 'lucide-react'
 import Home from './pages/Home'
 import Recipes from './pages/Recipes'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import RecipeForm from './pages/RecipeForm'
 import RecipeDetail from './pages/RecipeDetail'
-import MyRecipes from './pages/MyRecipes'
 import { useAuth } from './hooks/useAuth'
 
 function Navbar(){
@@ -42,15 +41,6 @@ function Navbar(){
                 <BookOpen className="w-4 h-4" />
                 <span className="font-medium">Recettes</span>
               </Link>
-              {user && (
-                <Link 
-                  to="/my-recipes" 
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 hover:text-primary hover:bg-primary-50 transition-all duration-200"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="font-medium">Mes recettes</span>
-                </Link>
-              )}
             </div>
           </div>
 
@@ -120,8 +110,6 @@ export default function App(){
           <Route path="/recipes" element={<Recipes />} />
           <Route path="/recipes/new" element={<PrivateRoute><RecipeForm /></PrivateRoute>} />
           <Route path="/recipes/:id" element={<RecipeDetail />} />
-          <Route path="/recipes/:id/edit" element={<PrivateRoute><RecipeForm /></PrivateRoute>} />
-          <Route path="/my-recipes" element={<PrivateRoute><MyRecipes /></PrivateRoute>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Routes>

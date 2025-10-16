@@ -128,3 +128,6 @@ if __name__ == "__main__":
     print("2. Remplissez le formulaire avec des données valides")
     print("3. Vérifiez que la recette est créée")
     print("4. Testez avec des données invalides pour voir les erreurs")
+
+
+
